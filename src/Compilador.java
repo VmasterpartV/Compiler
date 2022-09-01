@@ -51,10 +51,10 @@ public class Compilador extends javax.swing.JFrame {
     }
 
     private void init() {
-        title = "Compiler";
+        title = "Compilador Equipo 12";
         setLocationRelativeTo(null);
         setTitle(title);
-        directorio = new Directory(this, jtpCode, title, ".comp");
+        directorio = new Directory(this, jtpCode, title, ".mgm");
         addWindowListener(new WindowAdapter() {// Cuando presiona la "X" de la esquina superior derecha
             @Override
             public void windowClosing(WindowEvent e) {
@@ -192,11 +192,10 @@ public class Compilador extends javax.swing.JFrame {
                 .addGroup(panelButtonCompilerExecuteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCompilar)
                     .addComponent(btnEjecutar))
-                .addContainerGap(7, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jtaOutputConsole.setEditable(false);
-        jtaOutputConsole.setBackground(new java.awt.Color(255, 255, 255));
         jtaOutputConsole.setColumns(20);
         jtaOutputConsole.setRows(5);
         jScrollPane2.setViewportView(jtaOutputConsole);
@@ -206,7 +205,7 @@ public class Compilador extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Componente léxico", "Lexema", "[Línea, Columna]"
+                "Lexema", "Tipo", "[Línea, Columna]"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -251,7 +250,7 @@ public class Compilador extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addContainerGap(8, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         getContentPane().add(rootPanel);
@@ -382,7 +381,7 @@ public class Compilador extends javax.swing.JFrame {
 
     private void fillTableTokens() {
         tokens.forEach(token -> {
-            Object[] data = new Object[]{token.getLexicalComp(), token.getLexeme(), "[" + token.getLine() + ", " + token.getColumn() + "]"};
+            Object[] data = new Object[]{token.getLexeme(), token.getLexicalComp(), "[" + token.getLine() + ", " + token.getColumn() + "]"};
             Functions.addRowDataInTable(tblTokens, data);
         });
     }
