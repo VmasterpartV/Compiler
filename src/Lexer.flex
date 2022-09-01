@@ -47,15 +47,22 @@ I-Var | S-Var | Ch-Var { return token(yytext(), "TIPO_DATO", yyline, yycolumn); 
 /* Número real */
 12{Numero}12.{Numero} { return token(yytext(), "S-Var", yyline, yycolumn); }
 
-/* Operadores de agrupación */
+/* Separadores */
 "(" { return token(yytext(), "PARENTESIS_A", yyline, yycolumn); }
 ")" { return token(yytext(), "PARENTESIS_C", yyline, yycolumn); }
 "{" { return token(yytext(), "LLAVE_A", yyline, yycolumn); }
 "}" { return token(yytext(), "LLAVE_C", yyline, yycolumn); }
-
-/* Signos de puntuación */
 "," { return token(yytext(), "COMA", yyline, yycolumn); }
 ";" { return token(yytext(), "PUNTO_COMA", yyline, yycolumn); }
+
+/* Operadores aritméticos */
+"+" | "-" | "*" | "/" | "%" { return token(yytext(), "OP_ARIT", yyline, yycolumn); }
+
+/* Operadores relacionales */
+"<" | "<=" | ">" | ">=" | "==" | "!=" { return token(yytext(), "OP_REL", yyline, yycolumn); }
+
+/* Operador de asignación */
+"=" { return token(yytext(), "OP_ASIG", yyline, yycolumn); }
 
 /* Operadores lógicos */
 "&&" | "||" { return token(yytext(), "OP_LOG", yyline, yycolumn); }

@@ -47,11 +47,17 @@ I-Var | S-Var | Ch-Var { return textColor(yychar, yylength(), new Color(148, 58,
 /* Número real */
 12{Numero}12.{Numero} { return textColor(yychar, yylength(), new Color(35, 120, 147)); }
 
-/* Operadores de agrupación */
-"(" | ")" | "{" | "}" { return textColor(yychar, yylength(), Color.red); }
+/* Separadores */
+"(" | ")" | "{" | "}" | "," | ";" { return textColor(yychar, yylength(), Color.red); }
 
-/* Signos de puntuación */
-"," | ";" { return textColor(yychar, yylength(), Color.green); }
+/* Operadores aritméticos */
+"+" | "-" | "*" | "/" | "%" { return textColor(yychar, yylength(), new Color(212, 102, 23)); }
+
+/* Operadores relacionales */
+"<" | "<=" | ">" | ">=" | "==" | "!=" { return textColor(yychar, yylength(), new Color(181, 4, 110)); }
+
+/* Operador de asignación */
+"=" { return textColor(yychar, yylength(), new Color(3, 99, 33)); }
 
 /* Operadores lógicos */
 "&&" | "||" { return textColor(yychar, yylength(), new Color(48, 63, 159)); }
