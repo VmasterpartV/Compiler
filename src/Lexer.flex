@@ -23,9 +23,11 @@ ComentarioDeDocumentacion = "/**" {ContenidoComentario} "*"+ "/"
 Comentario = {ComentarioTradicional} | {FinDeLineaComentario} | {ComentarioDeDocumentacion}
 
 /* Identificador */
+Letra = [A-Za-zÑñ_ÁÉÍÓÚáéíóúÜü]
 Digito = [0-9]
 Minuscula = [a-z]
 Identificador = {Digito}+{Minuscula}
+Caracter = [A-Za-zÑñ_ÁÉÍÓÚáéíóúÜü0-9"("")""{""}"","";""+""-""*""/""%""<""="">""!""&""|""?""!""'""#""."\"]
 
 
 /* Número */
@@ -46,6 +48,9 @@ I-Var | S-Var | Ch-Var { return token(yytext(), "TIPO_DATO", yyline, yycolumn); 
 
 /* Número real */
 12{Numero}12.{Numero} { return token(yytext(), "S-Var", yyline, yycolumn); }
+
+/* Cadena */
+\" {Letra}+ \" { return token(yytext(), "Ch-Var", yyline, yycolumn); }
 
 /* Separadores */
 "(" { return token(yytext(), "PARENTESIS_A", yyline, yycolumn); }
@@ -69,4 +74,8 @@ I-Var | S-Var | Ch-Var { return token(yytext(), "TIPO_DATO", yyline, yycolumn); 
 
 /* for */
 12for12 { return token(yytext(), "FOR", yyline, yycolumn); }
+
+/* Errores */
+{Caracter}+ { return token(yytext(), "ERROR", yyline, yycolumn); }
+
 . { return token(yytext(), "ERROR", yyline, yycolumn); }

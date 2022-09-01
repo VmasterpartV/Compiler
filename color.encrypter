@@ -1,8 +1,18 @@
-123412
-123412.3454
-I-Var RX34233x
+/* Comentario */
+I-Var RX34233x , RX1b , RX8595j = 123412;
+S-Var RX21x = 123412.3454 ;
+Ch-Var RX948489g = "cadena" ;
+
+// Errores
+I-Var variable12=?!#12 = 123412;
+sd
+24fhrhfr
+{d3}e;
+
+// Otras instrucciones válidas
 ,  ; { } ( )
 && ||
 12for12
 + - * / %
 < <= > >= == !=
+; }

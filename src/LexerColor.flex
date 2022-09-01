@@ -25,10 +25,12 @@ Comentario = {ComentarioTradicional} | {FinDeLineaComentario} | {ComentarioDeDoc
 /* Identificador */
 Letra = [A-Za-zÑñ_ÁÉÍÓÚáéíóúÜü]
 Digito = [0-9]
-Identificador = {Letra}({Letra}|{Digito})*
+Minuscula = [a-z]
+Identificador = {Digito}+{Minuscula}
+Caracter = [A-Za-zÑñ_ÁÉÍÓÚáéíóúÜü0-9"("")""{""}"","";""+""-""*""/""%""<""="">""!""&""|""?""!""'""#""."\"]
 
 /* Número */
-Numero = 0 | [1-9][0-9]*
+Numero = [0-9]+
 %%
 
 /* Comentarios o espacios en blanco */
@@ -47,6 +49,9 @@ I-Var | S-Var | Ch-Var { return textColor(yychar, yylength(), new Color(148, 58,
 /* Número real */
 12{Numero}12.{Numero} { return textColor(yychar, yylength(), new Color(35, 120, 147)); }
 
+/* Cadena */
+\" {Letra}+ \" { return textColor(yychar, yylength(), new Color(77, 35, 6)); }
+
 /* Separadores */
 "(" | ")" | "{" | "}" | "," | ";" { return textColor(yychar, yylength(), Color.red); }
 
@@ -57,12 +62,15 @@ I-Var | S-Var | Ch-Var { return textColor(yychar, yylength(), new Color(148, 58,
 "<" | "<=" | ">" | ">=" | "==" | "!=" { return textColor(yychar, yylength(), new Color(181, 4, 110)); }
 
 /* Operador de asignación */
-"=" { return textColor(yychar, yylength(), new Color(3, 99, 33)); }
+"=" { return textColor(yychar, yylength(), new Color(255, 0, 157)); }
 
 /* Operadores lógicos */
 "&&" | "||" { return textColor(yychar, yylength(), new Color(48, 63, 159)); }
 
 /* for */
 12for12 { return textColor(yychar, yylength(), new Color(198, 40, 40)); }
+
+/* Errores */
+{Caracter}+ { /* Ignorar */ }
 
 . { /* Ignorar */ }

@@ -33,8 +33,10 @@ import javax.swing.Timer;
 public class Compilador extends javax.swing.JFrame {
 
     private String title;
+    private String lastDataType = "";
     private Directory directorio;
     private ArrayList<Token> tokens;
+    private ArrayList<Token> program;
     private ArrayList<ErrorLSSL> errors;
     private ArrayList<TextColor> textsColor;
     private Timer timerKeyReleased;
@@ -71,6 +73,7 @@ public class Compilador extends javax.swing.JFrame {
             timerKeyReleased.restart();
         });
         tokens = new ArrayList<>();
+        program = new ArrayList<>();
         errors = new ArrayList<>();
         textsColor = new ArrayList<>();
         identProd = new ArrayList<>();
@@ -205,11 +208,11 @@ public class Compilador extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Lexema", "Tipo", "[Línea, Columna]"
+                "Lexema", "Tipo"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -333,7 +336,17 @@ public class Compilador extends javax.swing.JFrame {
                 if (token == null) {
                     break;
                 }
-                tokens.add(token);
+                boolean repetido = false;
+                // No se repiten los tokens
+                for (int i = 0; i < tokens.size(); i++) {
+                    if (tokens.get(i).getLexeme().equals(token.getLexeme())) {
+                        repetido = true;
+                    }
+                }
+                if (!repetido) {
+                    tokens.add(token);
+                }
+                program.add(token);
             }
         } catch (FileNotFoundException ex) {
             System.out.println("El archivo no pudo ser encontrado... " + ex.getMessage());
@@ -381,7 +394,20 @@ public class Compilador extends javax.swing.JFrame {
 
     private void fillTableTokens() {
         tokens.forEach(token -> {
-            Object[] data = new Object[]{token.getLexeme(), token.getLexicalComp(), "[" + token.getLine() + ", " + token.getColumn() + "]"};
+            String lexema = token.getLexeme();
+            String tipo = token.getLexicalComp();
+            if (tipo.equals("IDENTIFICADOR")) {
+                tipo = lastDataType;
+            } else if (tipo.equals("TIPO_DATO")) {
+                lastDataType = lexema;
+            } else if (tipo.equals("PUNTO_COMA")) {
+                lastDataType = "";
+            }
+            
+            if (!tipo.equals("I-Var") && !tipo.equals("S-Var") && !tipo.equals("Ch-Var") && !tipo.equals("ERROR")) {
+                tipo = "";
+            }
+            Object[] data = new Object[]{lexema, tipo}; //, "[" + token.getLine() + ", " + token.getColumn() + "]"
             Functions.addRowDataInTable(tblTokens, data);
         });
     }
