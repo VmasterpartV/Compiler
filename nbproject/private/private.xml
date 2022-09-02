@@ -3,8 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/yisus/Documents/Compiler/src/Lexer.flex</file>
-            <file>file:/home/yisus/Documents/Compiler/src/LexerColor.flex</file>
+            <file>file:/C:/Users/ivan_/Documents/NetBeansProjects/Compilador/Compiler/src/Compilador.java</file>
+            <file>file:/C:/Users/ivan_/Documents/NetBeansProjects/Compilador/Compiler/src/LexerColor.flex</file>
+            <file>file:/C:/Users/ivan_/Documents/NetBeansProjects/Compilador/Compiler/src/LexerColor.java</file>
+            <file>file:/C:/Users/ivan_/Documents/NetBeansProjects/Compilador/Compiler/src/Lexer.flex</file>
+            <file>file:/C:/Users/ivan_/Documents/NetBeansProjects/Compilador/Compiler/src/ExecuteJFlex.java</file>
+            <file>file:/C:/Users/ivan_/Documents/NetBeansProjects/Compilador/Compiler/src/Lexer.java</file>
         </group>
     </open-files>
 </project-private>

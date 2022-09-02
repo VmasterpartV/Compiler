@@ -1,10 +1,10 @@
 /* Comentario */
-I-Var RX34233x , RX1b , RX8595j = 123412;
+I-Var RX34343g , RX23232v , RX23454y = 123412 ;
 S-Var RX21x = 123412.3454 ;
-Ch-Var RX948489g = "cadena" ;
+RX333g = "cadena" ;
 
 // Errores
-I-Var variable12=?!#12 = 123412;
+I-Var variable12=?!#12 = 1234512 ;
 sd
 24fhrhfr
 {d3}e;

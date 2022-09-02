@@ -336,16 +336,6 @@ public class Compilador extends javax.swing.JFrame {
                 if (token == null) {
                     break;
                 }
-                boolean repetido = false;
-                // No se repiten los tokens
-                for (int i = 0; i < tokens.size(); i++) {
-                    if (tokens.get(i).getLexeme().equals(token.getLexeme())) {
-                        repetido = true;
-                    }
-                }
-                if (!repetido) {
-                    tokens.add(token);
-                }
                 program.add(token);
             }
         } catch (FileNotFoundException ex) {
@@ -393,22 +383,35 @@ public class Compilador extends javax.swing.JFrame {
     }
 
     private void fillTableTokens() {
-        tokens.forEach(token -> {
+        program.forEach(token -> {
             String lexema = token.getLexeme();
             String tipo = token.getLexicalComp();
             if (tipo.equals("IDENTIFICADOR")) {
                 tipo = lastDataType;
+            } else if (tipo.equals("PUNTO_COMA") || tipo.equals("OP_ASIG")) {
+                System.out.println("Reseteo data type");
+                lastDataType = "";
             } else if (tipo.equals("TIPO_DATO")) {
                 lastDataType = lexema;
-            } else if (tipo.equals("PUNTO_COMA")) {
-                lastDataType = "";
             }
-            
+
             if (!tipo.equals("I-Var") && !tipo.equals("S-Var") && !tipo.equals("Ch-Var") && !tipo.equals("ERROR")) {
                 tipo = "";
             }
-            Object[] data = new Object[]{lexema, tipo}; //, "[" + token.getLine() + ", " + token.getColumn() + "]"
-            Functions.addRowDataInTable(tblTokens, data);
+
+            boolean repetido = false;
+            // No se repiten los tokens
+            for (int i = 0; i < tokens.size(); i++) {
+                if (tokens.get(i).getLexeme().equals(token.getLexeme())) {
+                    repetido = true;
+                }
+            }
+            if (!repetido) {
+                tokens.add(token);
+                Object[] data = new Object[]{lexema, tipo}; //, "[" + token.getLine() + ", " + token.getColumn() + "]"
+                Functions.addRowDataInTable(tblTokens, data);
+            }
+
         });
     }
 
