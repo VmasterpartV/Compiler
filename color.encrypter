@@ -1,18 +1,14 @@
 /* Comentario */
 I-Var RX34343g , RX23232v , RX23454y = 123412 ;
 S-Var RX21x = 123412.3454 ;
-RX333g = "cadena" ;
+Ch-Var RX333g = "cadena" ;
+RX21x = RX23232v ; // float = int
 
 // Errores
+RX34343g = RX21x ; // Error int = float
+RX334g = RX333g ; // Variable no definida (RX334g)
+RX23232v = RX1a ; // Error int = null
+RX21x = RX333g ; // Error float = string
+RX333g = RX21x ; // Error string = float
+RX333g = RX23454y ; // Error string = int
 I-Var variable12=?!#12 = 1234512 ;
-sd
-24fhrhfr
-{d3}e;
-
-// Otras instrucciones válidas
-,  ; { } ( )
-&& ||
-12for12
-+ - * / %
-< <= > >= == !=
-; }

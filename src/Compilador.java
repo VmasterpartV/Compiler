@@ -37,6 +37,7 @@ public class Compilador extends javax.swing.JFrame {
     private Directory directorio;
     private ArrayList<Token> tokens;
     private ArrayList<Token> program;
+    private ArrayList<Token> errores;
     private ArrayList<ErrorLSSL> errors;
     private ArrayList<TextColor> textsColor;
     private Timer timerKeyReleased;
@@ -74,6 +75,7 @@ public class Compilador extends javax.swing.JFrame {
         });
         tokens = new ArrayList<>();
         program = new ArrayList<>();
+        errores = new ArrayList<>();
         errors = new ArrayList<>();
         textsColor = new ArrayList<>();
         identProd = new ArrayList<>();
@@ -101,6 +103,8 @@ public class Compilador extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         jtaOutputConsole = new javax.swing.JTextArea();
         jScrollPane3 = new javax.swing.JScrollPane();
+        tblErrors = new javax.swing.JTable();
+        jScrollPane4 = new javax.swing.JScrollPane();
         tblTokens = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -203,6 +207,25 @@ public class Compilador extends javax.swing.JFrame {
         jtaOutputConsole.setRows(5);
         jScrollPane2.setViewportView(jtaOutputConsole);
 
+        tblErrors.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Token", "Lexema", "Renglón", "Descripción"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblErrors.getTableHeader().setReorderingAllowed(false);
+        jScrollPane3.setViewportView(tblErrors);
+
         tblTokens.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -220,7 +243,7 @@ public class Compilador extends javax.swing.JFrame {
             }
         });
         tblTokens.getTableHeader().setReorderingAllowed(false);
-        jScrollPane3.setViewportView(tblTokens);
+        jScrollPane4.setViewportView(tblTokens);
 
         javax.swing.GroupLayout rootPanelLayout = new javax.swing.GroupLayout(rootPanel);
         rootPanel.setLayout(rootPanelLayout);
@@ -235,9 +258,13 @@ public class Compilador extends javax.swing.JFrame {
                         .addComponent(panelButtonCompilerExecute, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 693, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 693, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
-                .addGap(17, 17, 17))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
+                .addGap(11, 11, 11))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, rootPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane3)
+                .addContainerGap())
         );
         rootPanelLayout.setVerticalGroup(
             rootPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -252,8 +279,10 @@ public class Compilador extends javax.swing.JFrame {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(16, Short.MAX_VALUE))
         );
 
         getContentPane().add(rootPanel);
@@ -383,6 +412,7 @@ public class Compilador extends javax.swing.JFrame {
     }
 
     private void fillTableTokens() {
+        // Recorrido 1
         program.forEach(token -> {
             String lexema = token.getLexeme();
             String tipo = token.getLexicalComp();
@@ -407,12 +437,83 @@ public class Compilador extends javax.swing.JFrame {
                 }
             }
             if (!repetido) {
-                tokens.add(token);
+                String newTipo = tipo;
+                if (tipo == "") {
+                    newTipo = "null";
+                }
+                Token newToken = new Token(lexema, newTipo, token.getLine(), token.getColumn());
+                tokens.add(newToken);
                 Object[] data = new Object[]{lexema, tipo}; //, "[" + token.getLine() + ", " + token.getColumn() + "]"
                 Functions.addRowDataInTable(tblTokens, data);
             }
-
         });
+
+        // Recorrido 2
+        Token[][] lineas = new Token[1000][50];
+        int linea = 0;
+        int counter = 0;
+        for (int i = 0; i < program.size(); i++) {
+            if (program.get(i).getLexeme().equals(";")) {
+                linea++;
+                counter = 0;
+                System.out.println("Reinicio (Siguiente línea)");
+            } else {
+                lineas[linea][counter] = program.get(i);
+                System.out.println("valor: " + program.get(i));
+                System.out.println("linea: " + linea);
+                System.out.println("columna: " + counter);
+                counter++;
+            }
+        }
+        System.out.println("Termina armado de lineas");
+        for (int i = 0; i < linea; i++) {
+            String tipo_val = "";
+            for (int j = 0; lineas[i][j] != null; j++) {
+                if (lineas[i][j].getLexeme().equals("=")) {
+                    for (int a = 0; a < tokens.size(); a++) {
+                        if (j != 0 && lineas[i][j - 1].getLexeme().equals(tokens.get(a).getLexeme())) {
+                            tipo_val = tokens.get(a).getLexicalComp();
+                            if (tokens.get(a).getLexicalComp().equals("null")) {
+                                errores.add(lineas[i][j - 1]);
+                                Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j - 1].getLexeme(), lineas[i][j - 1].getLine(), "Variable indefinida"};
+                                Functions.addRowDataInTable(tblErrors, data);
+                            }
+                        }
+                    }
+                } else if (j != 0 && lineas[i][j - 1].getLexeme().equals("=") && lineas[i][j].getLexicalComp().equals("IDENTIFICADOR")) {
+                    for (int a = 0; a < tokens.size(); a++) {
+                        if (lineas[i][j].getLexeme().equals(tokens.get(a).getLexeme())) {
+                            System.out.println("Lexema: " + lineas[i][j]);
+                            System.out.println("Token: " + tokens.get(a));
+                            String tipo_actual = tokens.get(a).getLexicalComp();
+                            System.out.println("tipo_val: " + tipo_val);
+                            // I-Var reglas
+                            if (tipo_val.equals("I-Var")) {
+                                if (!tipo_actual.equals("I-Var")) {
+                                    errores.add(lineas[i][j]);
+                                    Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Incompatibilidad de tipos, I-Var"};
+                                    Functions.addRowDataInTable(tblErrors, data);
+                                }
+                                // S-Var reglas
+                            } else if (tipo_val.equals("S-Var")) {
+                                if (!tipo_actual.equals("S-Var") && !tipo_actual.equals("I-Var")) {
+                                    errores.add(lineas[i][j]);
+                                    Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Incompatibilidad de tipos, S-Var"};
+                                    Functions.addRowDataInTable(tblErrors, data);
+                                }
+                                // Ch-Var reglas
+                            } else if (tipo_val.equals("Ch-Var")) {
+                                if (!tipo_actual.equals("Ch-Var")) {
+                                    errores.add(lineas[i][j]);
+                                    Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Incompatibilidad de tipos, Ch-Var"};
+                                    Functions.addRowDataInTable(tblErrors, data);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void printConsole() {
@@ -433,9 +534,12 @@ public class Compilador extends javax.swing.JFrame {
 
     private void clearFields() {
         Functions.clearDataInTable(tblTokens);
+        Functions.clearDataInTable(tblErrors);
         jtaOutputConsole.setText("");
+        program.clear();
         tokens.clear();
         errors.clear();
+        errores.clear();
         identProd.clear();
         identificadores.clear();
         codeHasBeenCompiled = false;
@@ -491,10 +595,12 @@ public class Compilador extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JTextArea jtaOutputConsole;
     private javax.swing.JTextPane jtpCode;
     private javax.swing.JPanel panelButtonCompilerExecute;
     private javax.swing.JPanel rootPanel;
+    private javax.swing.JTable tblErrors;
     private javax.swing.JTable tblTokens;
     // End of variables declaration//GEN-END:variables
 }
