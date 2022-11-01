@@ -44,10 +44,10 @@ RX{Identificador} { /*Ignorar*/ }
 I-Var | S-Var | Ch-Var { return textColor(yychar, yylength(), new Color(148, 58, 173)); }
 
 /* Número entero */
-12{Numero}12 { return textColor(yychar, yylength(), new Color(35, 120, 147)); }
+("" | -)12{Numero}12 { return textColor(yychar, yylength(), new Color(35, 120, 147)); }
 
 /* Número real */
-12{Numero}12.{Numero} { return textColor(yychar, yylength(), new Color(35, 120, 147)); }
+("" | -)12{Numero}12.{Numero} { return textColor(yychar, yylength(), new Color(35, 120, 147)); }
 
 /* Cadena */
 \" {Letra}+ \" { return textColor(yychar, yylength(), new Color(77, 35, 6)); }

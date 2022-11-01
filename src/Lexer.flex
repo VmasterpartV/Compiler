@@ -44,10 +44,10 @@ RX{Identificador} { return token(yytext(), "IDENTIFICADOR", yyline, yycolumn); }
 I-Var | S-Var | Ch-Var { return token(yytext(), "TIPO_DATO", yyline, yycolumn); }
 
 /* Número entero */
-12{Numero}12 { return token(yytext(), "I-Var", yyline, yycolumn); }
+("" | -)12{Numero}12 { return token(yytext(), "I-Var", yyline, yycolumn); }
 
 /* Número real */
-12{Numero}12.{Numero} { return token(yytext(), "S-Var", yyline, yycolumn); }
+("" | -)12{Numero}12.{Numero} { return token(yytext(), "S-Var", yyline, yycolumn); }
 
 /* Cadena */
 \" {Letra}+ \" { return token(yytext(), "Ch-Var", yyline, yycolumn); }

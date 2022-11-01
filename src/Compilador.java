@@ -250,21 +250,22 @@ public class Compilador extends javax.swing.JFrame {
         rootPanelLayout.setHorizontalGroup(
             rootPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(rootPanelLayout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addGroup(rootPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addGroup(rootPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(rootPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 695, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rootPanelLayout.createSequentialGroup()
-                        .addComponent(buttonsFilePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(panelButtonCompilerExecute, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 693, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 693, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(12, 12, 12)
+                        .addGroup(rootPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rootPanelLayout.createSequentialGroup()
+                                .addComponent(buttonsFilePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(panelButtonCompilerExecute, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 693, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 693, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
                 .addGap(11, 11, 11))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, rootPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane3)
-                .addContainerGap())
         );
         rootPanelLayout.setVerticalGroup(
             rootPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -419,7 +420,6 @@ public class Compilador extends javax.swing.JFrame {
             if (tipo.equals("IDENTIFICADOR")) {
                 tipo = lastDataType;
             } else if (tipo.equals("PUNTO_COMA") || tipo.equals("OP_ASIG")) {
-                System.out.println("Reseteo data type");
                 lastDataType = "";
             } else if (tipo.equals("TIPO_DATO")) {
                 lastDataType = lexema;
@@ -449,23 +449,18 @@ public class Compilador extends javax.swing.JFrame {
         });
 
         // Recorrido 2
-        Token[][] lineas = new Token[1000][50];
+        Token[][] lineas = new Token[9999][99];
         int linea = 0;
         int counter = 0;
         for (int i = 0; i < program.size(); i++) {
             if (program.get(i).getLexeme().equals(";")) {
                 linea++;
                 counter = 0;
-                System.out.println("Reinicio (Siguiente línea)");
             } else {
                 lineas[linea][counter] = program.get(i);
-                System.out.println("valor: " + program.get(i));
-                System.out.println("linea: " + linea);
-                System.out.println("columna: " + counter);
                 counter++;
             }
         }
-        System.out.println("Termina armado de lineas");
         for (int i = 0; i < linea; i++) {
             String tipo_val = "";
             for (int j = 0; lineas[i][j] != null; j++) {
@@ -480,33 +475,50 @@ public class Compilador extends javax.swing.JFrame {
                             }
                         }
                     }
-                } else if (j != 0 && lineas[i][j - 1].getLexeme().equals("=") && lineas[i][j].getLexicalComp().equals("IDENTIFICADOR")) {
+                } else if (j != 0 && (lineas[i][j - 1].getLexeme().equals("=") || lineas[i][j - 1].getLexicalComp().equals("OP_ARIT"))  && lineas[i][j].getLexicalComp().equals("IDENTIFICADOR")) {
                     for (int a = 0; a < tokens.size(); a++) {
                         if (lineas[i][j].getLexeme().equals(tokens.get(a).getLexeme())) {
-                            System.out.println("Lexema: " + lineas[i][j]);
-                            System.out.println("Token: " + tokens.get(a));
                             String tipo_actual = tokens.get(a).getLexicalComp();
-                            System.out.println("tipo_val: " + tipo_val);
                             // I-Var reglas
                             if (tipo_val.equals("I-Var")) {
                                 if (!tipo_actual.equals("I-Var")) {
-                                    errores.add(lineas[i][j]);
-                                    Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Incompatibilidad de tipos, I-Var"};
-                                    Functions.addRowDataInTable(tblErrors, data);
+                                    if (tipo_actual.equals("null")) {
+                                        errores.add(lineas[i][j]);
+                                        Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Variable indefinida"};
+                                        Functions.addRowDataInTable(tblErrors, data);
+                                    } else {
+                                        errores.add(lineas[i][j]);
+                                        Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Incompatibilidad de tipos, I-Var"};
+                                        Functions.addRowDataInTable(tblErrors, data);
+                                    }
                                 }
-                                // S-Var reglas
+                            // S-Var reglas
                             } else if (tipo_val.equals("S-Var")) {
                                 if (!tipo_actual.equals("S-Var") && !tipo_actual.equals("I-Var")) {
-                                    errores.add(lineas[i][j]);
-                                    Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Incompatibilidad de tipos, S-Var"};
-                                    Functions.addRowDataInTable(tblErrors, data);
+                                    if (tipo_actual.equals("null")) {
+                                        errores.add(lineas[i][j]);
+                                        Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Variable indefinida"};
+                                        Functions.addRowDataInTable(tblErrors, data);
+                                    } else {
+                                        errores.add(lineas[i][j]);
+                                        Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Incompatibilidad de tipos, S-Var"};
+                                        Functions.addRowDataInTable(tblErrors, data);
+                                    }
+
                                 }
-                                // Ch-Var reglas
+                            // Ch-Var reglas
                             } else if (tipo_val.equals("Ch-Var")) {
                                 if (!tipo_actual.equals("Ch-Var")) {
-                                    errores.add(lineas[i][j]);
-                                    Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Incompatibilidad de tipos, Ch-Var"};
-                                    Functions.addRowDataInTable(tblErrors, data);
+                                    if (tipo_actual.equals("null")) {
+                                        errores.add(lineas[i][j]);
+                                        Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Variable indefinida"};
+                                        Functions.addRowDataInTable(tblErrors, data);
+                                    } else {
+                                        errores.add(lineas[i][j]);
+                                        Object[] data = new Object[]{"ErrSem" + errores.size(), lineas[i][j].getLexeme(), lineas[i][j].getLine(), "Incompatibilidad de tipos, Ch-Var"};
+                                        Functions.addRowDataInTable(tblErrors, data);
+                                    }
+
                                 }
                             }
                         }
