@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
+import java.util.Stack;
 
 /**
  *
@@ -438,7 +439,7 @@ public class Compilador extends javax.swing.JFrame {
             }
             if (!repetido) {
                 String newTipo = tipo;
-                if (tipo == "") {
+                if (tipo.equals("")) {
                     newTipo = "null";
                 }
                 Token newToken = new Token(lexema, newTipo, token.getLine(), token.getColumn());
@@ -449,9 +450,10 @@ public class Compilador extends javax.swing.JFrame {
         });
 
         // Recorrido 2
-        Token[][] lineas = new Token[9999][99];
+        Token[][] lineas = new Token[9999][999];
         int linea = 0;
         int counter = 0;
+        // Armado de lineas
         for (int i = 0; i < program.size(); i++) {
             if (program.get(i).getLexeme().equals(";")) {
                 linea++;
@@ -475,7 +477,7 @@ public class Compilador extends javax.swing.JFrame {
                             }
                         }
                     }
-                } else if (j != 0 && (lineas[i][j - 1].getLexeme().equals("=") || lineas[i][j - 1].getLexicalComp().equals("OP_ARIT"))  && lineas[i][j].getLexicalComp().equals("IDENTIFICADOR")) {
+                } else if (j != 0 && (lineas[i][j - 1].getLexeme().equals("=") || lineas[i][j - 1].getLexicalComp().equals("OP_ARIT")) && lineas[i][j].getLexicalComp().equals("IDENTIFICADOR")) {
                     for (int a = 0; a < tokens.size(); a++) {
                         if (lineas[i][j].getLexeme().equals(tokens.get(a).getLexeme())) {
                             String tipo_actual = tokens.get(a).getLexicalComp();
@@ -492,7 +494,7 @@ public class Compilador extends javax.swing.JFrame {
                                         Functions.addRowDataInTable(tblErrors, data);
                                     }
                                 }
-                            // S-Var reglas
+                                // S-Var reglas
                             } else if (tipo_val.equals("S-Var")) {
                                 if (!tipo_actual.equals("S-Var") && !tipo_actual.equals("I-Var")) {
                                     if (tipo_actual.equals("null")) {
@@ -506,7 +508,7 @@ public class Compilador extends javax.swing.JFrame {
                                     }
 
                                 }
-                            // Ch-Var reglas
+                                // Ch-Var reglas
                             } else if (tipo_val.equals("Ch-Var")) {
                                 if (!tipo_actual.equals("Ch-Var")) {
                                     if (tipo_actual.equals("null")) {
@@ -526,6 +528,234 @@ public class Compilador extends javax.swing.JFrame {
                 }
             }
         }
+
+        // Tercer recorrido
+        for (int i = 0; i < linea; i++) {
+            for (int j = 0; lineas[i][j] != null; j++) {
+                if (lineas[i][j].getLexicalComp().equals("S-Var") || lineas[i][j].getLexicalComp().equals("Ch-Var") || lineas[i][j].getLexicalComp().equals("I-Var")) {
+                    break;
+                } else if (j != 0 && lineas[i][j].getLexeme().equals("=")) {
+                    String operacion = "";
+                    for (int x = j + 1; lineas[i][x] != null; x++) {
+                        operacion += " " + lineas[i][x].getLexeme();
+                    }
+                    operacion = lineas[i][j - 1].getLexeme() + " =" + operacion;
+                    System.out.println(operacion);
+                    convertirATriplos(operacion);
+                    break;
+                } 
+            }
+            System.out.println("");
+        }
+    }
+
+    private void convertirATriplos(String op) {
+        String[] arrayOp = op.split(" ");
+        boolean init = false;
+        boolean init2 = false;
+        boolean T1 = false;
+        boolean paren = false;
+        int parente = 0;
+        for (int i = 0; i < arrayOp.length; i++) {
+            if (arrayOp[i].equals("(")) {
+                String[] subArr = new String[999];
+                int n = 0;
+                for (int j = i + 1; j < arrayOp.length; j++) {
+                    if (arrayOp[j].equals(")")) {
+                        break;
+                    }
+                    subArr[n] = arrayOp[j];
+                    n++;
+                }
+                T1 = imprimirTriplo(subArr, init, init2, T1);
+                paren = true;
+                parente++;
+            }
+        }
+
+        String[] auxArr = new String[999];
+        boolean ignorar = false;
+        String opera = "";
+        int b = 0;
+
+        if (parente % 2 == 0) {
+            paren = T1;
+        } else {
+            paren = !T1;
+        }
+        init2 = false;
+        for (int x = 0; x < arrayOp.length; x++) {
+            if (arrayOp[x].equals("(")) {
+                ignorar = true;
+                if (paren) {
+                    auxArr[b] = "T2";
+                    opera += " T2";
+                    paren = false;
+
+                } else {
+                    auxArr[b] = "T1";
+                    opera += " T1";
+                    paren = true;
+                }
+                b++;
+            }
+
+            if (!ignorar) {
+                auxArr[b] = arrayOp[x];
+                opera += " " + arrayOp[x];
+                b++;
+            }
+
+            if (arrayOp[x].equals(")")) {
+                ignorar = false;
+            }
+
+        }
+        imprimirTriplo(auxArr, init, init2, T1);
+    }
+
+    private boolean imprimirTriplo(String[] subArr, boolean init, boolean init2, boolean T1) {
+        for (int j = 0; subArr[j] != null; j++) {
+            if (subArr[j].equals("*") || subArr[j].equals("/")) {
+                if (subArr[j + 1].equals("T1") || T1) {
+                    if (!init2) {
+                        System.out.println("T2 " + subArr[j - 1] + " =");
+                        init2 = true;
+                    }
+                    System.out.println("T2 " + subArr[j + 1] + " " + subArr[j]);
+                    String[] auxArr = new String[999];
+                    int b = 0;
+                    for (int x = 0; subArr[x] != null; x++) {
+                        if (subArr[x] != subArr[j - 1] && subArr[x] != subArr[j] && subArr[x] != subArr[j + 1]) {
+                            auxArr[b] = subArr[x];
+                            b++;
+                        } else if (subArr[x].equals(subArr[j])) {
+                            auxArr[b] = "T2";
+                            b++;
+                            init = false;
+                        }
+                    }
+                    subArr = auxArr;
+                } else {
+                    if (!init && !subArr[j - 1].equals("T1")) {
+                        System.out.println("T1 " + subArr[j - 1] + " =");
+                        init = true;
+                    }
+
+                    System.out.println("T1 " + subArr[j + 1] + " " + subArr[j]);
+
+                    String[] auxArr = new String[999];
+                    int b = 0;
+                    for (int x = 0; subArr[x] != null; x++) {
+                        if (subArr[x] != subArr[j - 1] && subArr[x] != subArr[j] && subArr[x] != subArr[j + 1]) {
+                            auxArr[b] = subArr[x];
+                            b++;
+                        } else if (subArr[x].equals(subArr[j])) {
+                            auxArr[b] = "T1";
+                            b++;
+                        }
+                    }
+                    subArr = auxArr;
+                }
+                T1 = !T1;
+            }
+        }
+        for (int j = 0; subArr[j] != null; j++) {
+            if (subArr[j].equals("%")) {
+                if (subArr[j + 1].equals("T1") || T1) {
+                    if (!init2) {
+                        System.out.println("T2 " + subArr[j - 1] + " =");
+                        init2 = true;
+                    }
+                    System.out.println("T2 " + subArr[j + 1] + " " + subArr[j]);
+                    String[] auxArr = new String[999];
+                    int b = 0;
+                    for (int x = 0; subArr[x] != null; x++) {
+                        if (subArr[x] != subArr[j - 1] && subArr[x] != subArr[j] && subArr[x] != subArr[j + 1]) {
+                            auxArr[b] = subArr[x];
+                            b++;
+                        } else if (subArr[x].equals(subArr[j])) {
+                            auxArr[b] = "T2";
+                            b++;
+                            init = false;
+                        }
+                    }
+                    subArr = auxArr;
+                } else {
+                    if (!init && !subArr[j - 1].equals("T1")) {
+                        System.out.println("T1 " + subArr[j - 1] + " =");
+                        init = true;
+                    }
+
+                    System.out.println("T1 " + subArr[j + 1] + " " + subArr[j]);
+
+                    String[] auxArr = new String[999];
+                    int b = 0;
+                    for (int x = 0; subArr[x] != null; x++) {
+                        if (subArr[x] != subArr[j - 1] && subArr[x] != subArr[j] && subArr[x] != subArr[j + 1]) {
+                            auxArr[b] = subArr[x];
+                            b++;
+                        } else if (subArr[x].equals(subArr[j])) {
+                            auxArr[b] = "T1";
+                            b++;
+                        }
+                    }
+                    subArr = auxArr;
+                }
+                T1 = !T1;
+            }
+        }
+        for (int j = 0; subArr[j] != null; j++) {
+            if (subArr[j].equals("+") || subArr[j].equals("-")) {
+                if (subArr[j + 1].equals("T1") || T1) {
+                    if (!init2) {
+                        System.out.println("T2 " + subArr[j - 1] + " =");
+                        init2 = true;
+                    }
+                    System.out.println("T2 " + subArr[j + 1] + " " + subArr[j]);
+                    String[] auxArr = new String[999];
+                    int b = 0;
+                    for (int x = 0; subArr[x] != null; x++) {
+                        if (subArr[x] != subArr[j - 1] && subArr[x] != subArr[j] && subArr[x] != subArr[j + 1]) {
+                            auxArr[b] = subArr[x];
+                            b++;
+                        } else if (subArr[x].equals(subArr[j])) {
+                            auxArr[b] = "T2";
+                            b++;
+                            init = false;
+                        }
+                    }
+                    subArr = auxArr;
+                } else {
+                    if (!init && !subArr[j - 1].equals("T1")) {
+                        System.out.println("T1 " + subArr[j - 1] + " =");
+                        init = true;
+                    }
+
+                    System.out.println("T1 " + subArr[j + 1] + " " + subArr[j]);
+
+                    String[] auxArr = new String[999];
+                    int b = 0;
+                    for (int x = 0; subArr[x] != null; x++) {
+                        if (subArr[x] != subArr[j - 1] && subArr[x] != subArr[j] && subArr[x] != subArr[j + 1]) {
+                            auxArr[b] = subArr[x];
+                            b++;
+                        } else if (subArr[x].equals(subArr[j])) {
+                            auxArr[b] = "T1";
+                            b++;
+                        }
+                    }
+                    subArr = auxArr;
+                }
+                T1 = !T1;
+            }
+        }
+        for (int j = 0; subArr[j] != null; j++) {
+            if (j != 0 && subArr[j].equals("=")) {
+                System.out.println(subArr[j - 1] + " " + subArr[j + 1] + " " + subArr[j]);
+            }
+        }
+        return T1;
     }
 
     private void printConsole() {
@@ -574,13 +804,17 @@ public class Compilador extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Compilador.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Compilador.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Compilador.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Compilador.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Compilador.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Compilador.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Compilador.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Compilador.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
