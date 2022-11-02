@@ -543,7 +543,7 @@ public class Compilador extends javax.swing.JFrame {
                     System.out.println(operacion);
                     convertirATriplos(operacion);
                     break;
-                } 
+                }
             }
             System.out.println("");
         }
@@ -752,7 +752,13 @@ public class Compilador extends javax.swing.JFrame {
         }
         for (int j = 0; subArr[j] != null; j++) {
             if (j != 0 && subArr[j].equals("=")) {
-                System.out.println(subArr[j - 1] + " " + subArr[j + 1] + " " + subArr[j]);
+                if (!init && !subArr[j - 1].equals("T1")) {
+                    System.out.println("T1 " + subArr[j + 1] + " =");
+                    init = true;
+                    System.out.println(subArr[j - 1] + " T1 " + subArr[j]);
+                } else {
+                    System.out.println(subArr[j - 1] + " " + subArr[j + 1] + " " + subArr[j]);
+                }
             }
         }
         return T1;
