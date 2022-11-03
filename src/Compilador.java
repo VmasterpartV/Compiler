@@ -451,13 +451,51 @@ public class Compilador extends javax.swing.JFrame {
 
         // Recorrido 2
         Token[][] lineas = new Token[9999][999];
+        Token[] lineaAux = new Token[999];
         int linea = 0;
         int counter = 0;
+        boolean esperar = false;
         // Armado de lineas
         for (int i = 0; i < program.size(); i++) {
+            boolean bien = false;
             if (program.get(i).getLexeme().equals(";")) {
                 linea++;
                 counter = 0;
+            } else if (program.get(i).getLexeme().equals("}")) {
+                if (esperar) {
+                    linea++;
+                    counter = 0;
+                    for (int j = 0; lineaAux[j] != null; j++) {
+                        lineas[linea][j] = lineaAux[j];
+                    }
+                    esperar = false;
+                    lineaAux = new Token[999];
+                }
+                linea++;
+                counter = 0;
+                lineas[linea][counter] = program.get(i);
+                counter++;
+            } else if (program.get(i).getLexeme().equals(")")) {
+                for (int j = 0; lineas[linea][j] != null; j++) {
+                    if (lineas[linea][j].equals("(")) {
+                        bien = true;
+                        break;
+                    }
+                }
+                if (bien) {
+                    lineas[linea][counter] = program.get(i);
+                    counter++;
+                    bien = false;
+                } else {
+                    for (int j = 0; lineas[linea][j] != null; j++) {
+                        lineaAux[j] = lineas[linea][j];
+                    }
+                    esperar = true;
+                    lineas[linea] = new Token[999];
+                    counter = 0;
+                    lineas[linea][counter] = program.get(i);
+                    counter++;
+                }
             } else {
                 lineas[linea][counter] = program.get(i);
                 counter++;
@@ -534,18 +572,18 @@ public class Compilador extends javax.swing.JFrame {
             for (int j = 0; lineas[i][j] != null; j++) {
                 if (lineas[i][j].getLexicalComp().equals("S-Var") || lineas[i][j].getLexicalComp().equals("Ch-Var") || lineas[i][j].getLexicalComp().equals("I-Var")) {
                     break;
-                } else if (j != 0 && lineas[i][j].getLexeme().equals("=")) {
+                } else if (j != 0 && (lineas[i][j].getLexeme().equals("=") || lineas[i][j].getLexeme().equals("<") || lineas[i][j].getLexeme().equals(">") || lineas[i][j].getLexeme().equals("<=") || lineas[i][j].getLexeme().equals(">=") || lineas[i][j].getLexeme().equals("==") || lineas[i][j].getLexeme().equals("!="))) {
                     String operacion = "";
-                    for (int x = j + 1; lineas[i][x] != null; x++) {
+
+                    for (int x = j - 1; lineas[i][x] != null; x++) {
                         operacion += " " + lineas[i][x].getLexeme();
                     }
-                    operacion = lineas[i][j - 1].getLexeme() + " =" + operacion;
-                    System.out.println(operacion);
                     convertirATriplos(operacion);
                     break;
+                } else if (lineas[i][j].getLexeme().equals("}")) {
+                    System.out.println("\t" + "x " + "JMP");
                 }
             }
-            System.out.println("");
         }
     }
 
@@ -759,6 +797,53 @@ public class Compilador extends javax.swing.JFrame {
                 } else {
                     System.out.println(subArr[j - 1] + " " + subArr[j + 1] + " " + subArr[j]);
                 }
+            }
+        }
+        for (int j = 0; subArr[j] != null; j++) {
+            if (subArr[j].equals("<") || subArr[j].equals(">") || subArr[j].equals("<=") || subArr[j].equals(">=") || subArr[j].equals("==") || subArr[j].equals("!=")) {
+                if (subArr[j + 1].equals("T1") || T1) {
+                    if (!init2) {
+                        System.out.println("T2 " + subArr[j - 1] + " =");
+                        init2 = true;
+                    }
+                    System.out.println("T2 " + subArr[j + 1] + " " + subArr[j]);
+                    String[] auxArr = new String[999];
+                    int b = 0;
+                    for (int x = 0; subArr[x] != null; x++) {
+                        if (subArr[x] != subArr[j - 1] && subArr[x] != subArr[j] && subArr[x] != subArr[j + 1]) {
+                            auxArr[b] = subArr[x];
+                            b++;
+                        } else if (subArr[x].equals(subArr[j])) {
+                            auxArr[b] = "T2";
+                            b++;
+                            init = false;
+                        }
+                    }
+                    subArr = auxArr;
+                } else {
+                    if (!init && !subArr[j - 1].equals("T1")) {
+                        System.out.println("T1 " + subArr[j - 1] + " =");
+                        init = true;
+                    }
+
+                    System.out.println("T1 " + subArr[j + 1] + " " + subArr[j]);
+
+                    String[] auxArr = new String[999];
+                    int b = 0;
+                    for (int x = 0; subArr[x] != null; x++) {
+                        if (subArr[x] != subArr[j - 1] && subArr[x] != subArr[j] && subArr[x] != subArr[j + 1]) {
+                            auxArr[b] = subArr[x];
+                            b++;
+                        } else if (subArr[x].equals(subArr[j])) {
+                            auxArr[b] = "T1";
+                            b++;
+                        }
+                    }
+                    subArr = auxArr;
+                }
+                T1 = !T1;
+                System.out.println("\t" + "TRUE " + "x");
+                System.out.println("\t" + "FALSE " + "x");
             }
         }
         return T1;
