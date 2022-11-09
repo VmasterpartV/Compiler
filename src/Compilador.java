@@ -14,13 +14,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
@@ -45,8 +39,20 @@ public class Compilador extends javax.swing.JFrame {
     private ArrayList<Production> identProd;
     private HashMap<String, String> identificadores;
     private boolean codeHasBeenCompiled = false;
+    private int codinter = 0;
+    File f;
+    FileWriter w;
+    BufferedWriter bw;
+    PrintWriter wr;
+    String[][] codeIntermedio = new String[999][4];
+    int iniciofor = 0;
+    int inicioopera = 0;
+    int finfor = 0;
+    boolean entrofor = false;
+    boolean esor = false;
+    boolean primeror = true;
 
-    /**
+    /*
      * Creates new form Compilador
      */
     public Compilador() {
@@ -349,7 +355,45 @@ public class Compilador extends javax.swing.JFrame {
         syntacticAnalysis();
         semanticAnalysis();
         printConsole();
+        printCodeIntermedio();
         codeHasBeenCompiled = true;
+    }
+
+    private void printCodeIntermedio() {
+        try {
+            f = new File("codigo_intermedio.txt");
+            w = new FileWriter(f);
+            bw = new BufferedWriter(w);
+            wr = new PrintWriter(bw);
+
+            wr.write("Código intermedio\n");
+            primeror = true;
+            for (int i = 0; i < codinter; i++) {
+                wr.append("\n");
+                for (int j = 0; j < codeIntermedio[i].length; j++) {
+                    if (codeIntermedio[i][j].equals("FALSE ")) {
+                        if (!esor || (esor && !primeror)) {
+                            codeIntermedio[i][j + 1] = finfor + "";
+                            System.out.println("Entre a editar false");
+                        } else if (esor && primeror) {
+                            primeror = false;
+                        }
+                    } else if (codeIntermedio[i][j].equals("TRUE ")) {
+                        if (esor) {
+                            System.out.println("inicioopera: " + inicioopera);
+                            codeIntermedio[i][j + 1] = inicioopera + "";
+                        }
+                    }
+                    wr.append(codeIntermedio[i][j]);
+                }
+            }
+
+            wr.close();
+            bw.close();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Ha sucedido un error " + e);
+        }
     }
 
     private void lexicalAnalysis() {
@@ -570,6 +614,12 @@ public class Compilador extends javax.swing.JFrame {
         // Tercer recorrido
         for (int i = 0; i < linea; i++) {
             for (int j = 0; lineas[i][j] != null; j++) {
+                if (lineas[i][j].getLexeme().equals("||")) {
+                    esor = true;
+                    System.out.println("Es OR");
+                }
+            }
+            for (int j = 0; lineas[i][j] != null; j++) {
                 if (lineas[i][j].getLexicalComp().equals("S-Var") || lineas[i][j].getLexicalComp().equals("Ch-Var") || lineas[i][j].getLexicalComp().equals("I-Var")) {
                     break;
                 } else if (j != 0 && (lineas[i][j].getLexeme().equals("=") || lineas[i][j].getLexeme().equals("<") || lineas[i][j].getLexeme().equals(">") || lineas[i][j].getLexeme().equals("<=") || lineas[i][j].getLexeme().equals(">=") || lineas[i][j].getLexeme().equals("==") || lineas[i][j].getLexeme().equals("!="))) {
@@ -581,7 +631,22 @@ public class Compilador extends javax.swing.JFrame {
                     convertirATriplos(operacion);
                     break;
                 } else if (lineas[i][j].getLexeme().equals("}")) {
-                    System.out.println("\t" + "x " + "JMP");
+
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t \t";
+                    codeIntermedio[codinter - 1][2] = iniciofor + " ";
+                    codeIntermedio[codinter - 1][3] = "JMP";
+
+                    System.out.println(codinter + "\t " + iniciofor + " " + "JMP");
+                    iniciofor = 0;
+                    finfor = codinter + 1;
+                } else if (lineas[i][j].getLexeme().equals("12for12")) {
+                    entrofor = true;
+                    finfor = 0;
+                } else if (lineas[i][j].getLexeme().equals("{")) {
+                    inicioopera = codinter + 1;
                 }
             }
         }
@@ -657,10 +722,24 @@ public class Compilador extends javax.swing.JFrame {
             if (subArr[j].equals("*") || subArr[j].equals("/")) {
                 if (subArr[j + 1].equals("T1") || T1) {
                     if (!init2) {
-                        System.out.println("T2 " + subArr[j - 1] + " =");
+                        codinter++;
+
+                        codeIntermedio[codinter - 1][0] = codinter + "";
+                        codeIntermedio[codinter - 1][1] = "\t T2 ";
+                        codeIntermedio[codinter - 1][2] = subArr[j - 1];
+                        codeIntermedio[codinter - 1][3] = " =";
+
+                        System.out.println(codinter + "\t T2 " + subArr[j - 1] + " =");
                         init2 = true;
                     }
-                    System.out.println("T2 " + subArr[j + 1] + " " + subArr[j]);
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t T2 ";
+                    codeIntermedio[codinter - 1][2] = subArr[j + 1];
+                    codeIntermedio[codinter - 1][3] = " " + subArr[j];
+
+                    System.out.println(codinter + "\t T2 " + subArr[j + 1] + " " + subArr[j]);
                     String[] auxArr = new String[999];
                     int b = 0;
                     for (int x = 0; subArr[x] != null; x++) {
@@ -676,11 +755,24 @@ public class Compilador extends javax.swing.JFrame {
                     subArr = auxArr;
                 } else {
                     if (!init && !subArr[j - 1].equals("T1")) {
-                        System.out.println("T1 " + subArr[j - 1] + " =");
+                        codinter++;
+
+                        codeIntermedio[codinter - 1][0] = codinter + "";
+                        codeIntermedio[codinter - 1][1] = "\t T1 ";
+                        codeIntermedio[codinter - 1][2] = subArr[j - 1];
+                        codeIntermedio[codinter - 1][3] = " =";
+
+                        System.out.println(codinter + "\t T1 " + subArr[j - 1] + " =");
                         init = true;
                     }
+                    codinter++;
 
-                    System.out.println("T1 " + subArr[j + 1] + " " + subArr[j]);
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t T1 ";
+                    codeIntermedio[codinter - 1][2] = subArr[j + 1];
+                    codeIntermedio[codinter - 1][3] = " " + subArr[j];
+
+                    System.out.println(codinter + "\t T1 " + subArr[j + 1] + " " + subArr[j]);
 
                     String[] auxArr = new String[999];
                     int b = 0;
@@ -702,10 +794,24 @@ public class Compilador extends javax.swing.JFrame {
             if (subArr[j].equals("%")) {
                 if (subArr[j + 1].equals("T1") || T1) {
                     if (!init2) {
-                        System.out.println("T2 " + subArr[j - 1] + " =");
+                        codinter++;
+
+                        codeIntermedio[codinter - 1][0] = codinter + "";
+                        codeIntermedio[codinter - 1][1] = "\t T2 ";
+                        codeIntermedio[codinter - 1][2] = subArr[j - 1];
+                        codeIntermedio[codinter - 1][3] = " =";
+
+                        System.out.println(codinter + "\t T2 " + subArr[j - 1] + " =");
                         init2 = true;
                     }
-                    System.out.println("T2 " + subArr[j + 1] + " " + subArr[j]);
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t T2 ";
+                    codeIntermedio[codinter - 1][2] = subArr[j + 1];
+                    codeIntermedio[codinter - 1][3] = " " + subArr[j];
+
+                    System.out.println(codinter + "\t T2 " + subArr[j + 1] + " " + subArr[j]);
                     String[] auxArr = new String[999];
                     int b = 0;
                     for (int x = 0; subArr[x] != null; x++) {
@@ -721,11 +827,24 @@ public class Compilador extends javax.swing.JFrame {
                     subArr = auxArr;
                 } else {
                     if (!init && !subArr[j - 1].equals("T1")) {
-                        System.out.println("T1 " + subArr[j - 1] + " =");
+                        codinter++;
+
+                        codeIntermedio[codinter - 1][0] = codinter + "";
+                        codeIntermedio[codinter - 1][1] = "\t T1 ";
+                        codeIntermedio[codinter - 1][2] = subArr[j - 1];
+                        codeIntermedio[codinter - 1][3] = " =";
+
+                        System.out.println(codinter + "\t T1 " + subArr[j - 1] + " =");
                         init = true;
                     }
+                    codinter++;
 
-                    System.out.println("T1 " + subArr[j + 1] + " " + subArr[j]);
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t T1 ";
+                    codeIntermedio[codinter - 1][2] = subArr[j + 1];
+                    codeIntermedio[codinter - 1][3] = " " + subArr[j];
+
+                    System.out.println(codinter + "\t T1 " + subArr[j + 1] + " " + subArr[j]);
 
                     String[] auxArr = new String[999];
                     int b = 0;
@@ -747,10 +866,24 @@ public class Compilador extends javax.swing.JFrame {
             if (subArr[j].equals("+") || subArr[j].equals("-")) {
                 if (subArr[j + 1].equals("T1") || T1) {
                     if (!init2) {
-                        System.out.println("T2 " + subArr[j - 1] + " =");
+                        codinter++;
+
+                        codeIntermedio[codinter - 1][0] = codinter + "";
+                        codeIntermedio[codinter - 1][1] = "\t T2 ";
+                        codeIntermedio[codinter - 1][2] = subArr[j - 1];
+                        codeIntermedio[codinter - 1][3] = " =";
+
+                        System.out.println(codinter + "\t T2 " + subArr[j - 1] + " =");
                         init2 = true;
                     }
-                    System.out.println("T2 " + subArr[j + 1] + " " + subArr[j]);
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t T2 ";
+                    codeIntermedio[codinter - 1][2] = subArr[j + 1];
+                    codeIntermedio[codinter - 1][3] = " " + subArr[j];
+
+                    System.out.println(codinter + "\t T2 " + subArr[j + 1] + " " + subArr[j]);
                     String[] auxArr = new String[999];
                     int b = 0;
                     for (int x = 0; subArr[x] != null; x++) {
@@ -766,11 +899,24 @@ public class Compilador extends javax.swing.JFrame {
                     subArr = auxArr;
                 } else {
                     if (!init && !subArr[j - 1].equals("T1")) {
-                        System.out.println("T1 " + subArr[j - 1] + " =");
+                        codinter++;
+
+                        codeIntermedio[codinter - 1][0] = codinter + "";
+                        codeIntermedio[codinter - 1][1] = "\t T1 ";
+                        codeIntermedio[codinter - 1][2] = subArr[j - 1];
+                        codeIntermedio[codinter - 1][3] = " =";
+
+                        System.out.println(codinter + "\t T1 " + subArr[j - 1] + " =");
                         init = true;
                     }
+                    codinter++;
 
-                    System.out.println("T1 " + subArr[j + 1] + " " + subArr[j]);
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t T1 ";
+                    codeIntermedio[codinter - 1][2] = subArr[j + 1];
+                    codeIntermedio[codinter - 1][3] = " " + subArr[j];
+
+                    System.out.println(codinter + "\t T1 " + subArr[j + 1] + " " + subArr[j]);
 
                     String[] auxArr = new String[999];
                     int b = 0;
@@ -791,22 +937,61 @@ public class Compilador extends javax.swing.JFrame {
         for (int j = 0; subArr[j] != null; j++) {
             if (j != 0 && subArr[j].equals("=")) {
                 if (!init && !subArr[j - 1].equals("T1")) {
-                    System.out.println("T1 " + subArr[j + 1] + " =");
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t T1 ";
+                    codeIntermedio[codinter - 1][2] = subArr[j + 1];
+                    codeIntermedio[codinter - 1][3] = " =";
+
+                    System.out.println(codinter + "\t T1 " + subArr[j + 1] + " =");
                     init = true;
-                    System.out.println(subArr[j - 1] + " T1 " + subArr[j]);
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t " + subArr[j - 1];
+                    codeIntermedio[codinter - 1][2] = " T1 ";
+                    codeIntermedio[codinter - 1][3] = subArr[j];
+
+                    System.out.println(codinter + "\t " + subArr[j - 1] + " T1 " + subArr[j]);
                 } else {
-                    System.out.println(subArr[j - 1] + " " + subArr[j + 1] + " " + subArr[j]);
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t " + subArr[j - 1];
+                    codeIntermedio[codinter - 1][2] = " " + subArr[j + 1] + " ";
+                    codeIntermedio[codinter - 1][3] = subArr[j];
+
+                    System.out.println(codinter + "\t " + subArr[j - 1] + " " + subArr[j + 1] + " " + subArr[j]);
                 }
             }
         }
         for (int j = 0; subArr[j] != null; j++) {
             if (subArr[j].equals("<") || subArr[j].equals(">") || subArr[j].equals("<=") || subArr[j].equals(">=") || subArr[j].equals("==") || subArr[j].equals("!=")) {
+                if (entrofor) {
+                    iniciofor = codinter + 1;
+                    entrofor = false;
+                }
                 if (subArr[j + 1].equals("T1") || T1) {
                     if (!init2) {
-                        System.out.println("T2 " + subArr[j - 1] + " =");
+                        codinter++;
+
+                        codeIntermedio[codinter - 1][0] = codinter + "";
+                        codeIntermedio[codinter - 1][1] = "\t T2 ";
+                        codeIntermedio[codinter - 1][2] = subArr[j - 1];
+                        codeIntermedio[codinter - 1][3] = " =";
+
+                        System.out.println(codinter + "\t T2 " + subArr[j - 1] + " =");
                         init2 = true;
                     }
-                    System.out.println("T2 " + subArr[j + 1] + " " + subArr[j]);
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t T2 ";
+                    codeIntermedio[codinter - 1][2] = subArr[j + 1];
+                    codeIntermedio[codinter - 1][3] = " " + subArr[j];
+
+                    System.out.println(codinter + "\t T2 " + subArr[j + 1] + " " + subArr[j]);
                     String[] auxArr = new String[999];
                     int b = 0;
                     for (int x = 0; subArr[x] != null; x++) {
@@ -822,11 +1007,24 @@ public class Compilador extends javax.swing.JFrame {
                     subArr = auxArr;
                 } else {
                     if (!init && !subArr[j - 1].equals("T1")) {
-                        System.out.println("T1 " + subArr[j - 1] + " =");
+                        codinter++;
+
+                        codeIntermedio[codinter - 1][0] = codinter + "";
+                        codeIntermedio[codinter - 1][1] = "\t T1 ";
+                        codeIntermedio[codinter - 1][2] = subArr[j - 1];
+                        codeIntermedio[codinter - 1][3] = " =";
+
+                        System.out.println(codinter + "\t T1 " + subArr[j - 1] + " =");
                         init = true;
                     }
+                    codinter++;
 
-                    System.out.println("T1 " + subArr[j + 1] + " " + subArr[j]);
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t T1 ";
+                    codeIntermedio[codinter - 1][2] = subArr[j + 1];
+                    codeIntermedio[codinter - 1][3] = " " + subArr[j];
+
+                    System.out.println(codinter + "\t T1 " + subArr[j + 1] + " " + subArr[j]);
 
                     String[] auxArr = new String[999];
                     int b = 0;
@@ -842,8 +1040,46 @@ public class Compilador extends javax.swing.JFrame {
                     subArr = auxArr;
                 }
                 T1 = !T1;
-                System.out.println("\t" + "TRUE " + "x");
-                System.out.println("\t" + "FALSE " + "x");
+
+                if (esor && primeror) {
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t \t";
+                    codeIntermedio[codinter - 1][2] = "TRUE ";
+                    codeIntermedio[codinter - 1][3] = inicioopera + "";
+
+                    System.out.println(codinter + "\t \t" + "TRUE " + "x");
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t \t";
+                    codeIntermedio[codinter - 1][2] = "FALSE ";
+                    codeIntermedio[codinter - 1][3] = (codinter + 1) + "";
+
+                    System.out.println(codinter + "\t \t" + "FALSE " + "x");
+                    primeror = false;
+                } else {
+                    if (esor) {
+                        primeror = true;
+                    }
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t \t";
+                    codeIntermedio[codinter - 1][2] = "TRUE ";
+                    codeIntermedio[codinter - 1][3] = (codinter + 2) + "";
+
+                    System.out.println(codinter + "\t \t" + "TRUE " + "x");
+                    codinter++;
+
+                    codeIntermedio[codinter - 1][0] = codinter + "";
+                    codeIntermedio[codinter - 1][1] = "\t \t";
+                    codeIntermedio[codinter - 1][2] = "FALSE ";
+                    codeIntermedio[codinter - 1][3] = "x";
+
+                    System.out.println(codinter + "\t \t" + "FALSE " + "x");
+                }
             }
         }
         return T1;

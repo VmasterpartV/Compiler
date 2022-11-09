@@ -1,0 +1,25 @@
+Código intermedio
+
+1	 T1 RX73d =
+2	 T1 RX12a /
+3	 RX99p T1 =
+4	 T1 12012 =
+5	 RX73d T1 =
+6	 T1 RX73d =
+7	 T1 121012 <=
+8	 	TRUE 14
+9	 	FALSE 10
+10	 T2 RX34f =
+11	 T2 122012 >=
+12	 	TRUE 14
+13	 	FALSE 21
+14	 T1 RX12a =
+15	 T1 RX777u +
+16	 RX34f T1 =
+17	 T1 RX73d =
+18	 T1 12112 +
+19	 RX73d T1 =
+20	 	6 JMP
+21	 T1 RX77i =
+22	 T1 RX12a %
+23	 RX32l T1 =
