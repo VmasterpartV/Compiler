@@ -1,0 +1,14 @@
+----- CODIGO OPTIMIZADO -----
+
+1	I-Var RX73d , RX34f , RX12a 
+2	S-Var RX4h, RX32l , RX77i 
+3	Ch-Var RX99p , RX99p , RX89o 
+4	RX99p = RX73d / RX12a 
+5	RX32l = RX89o + RX89o 
+6	RX32l = RX99p * RX89o 
+7	12for12 ( RX73d = 12012 RX73d <= 121012 && RX34f >= 122012 ) 
+8	{
+9	RX34f = RX99p + RX777u 
+10	RX73d = RX73d + 12112 
+11	}
+12	RX12a = RX99p % RX12a 

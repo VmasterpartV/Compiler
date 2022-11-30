@@ -360,13 +360,14 @@ public class Compilador extends javax.swing.JFrame {
     }
 
     private void printCodeIntermedio() {
+        String[][] codeEnsamblador = new String[9999][999];
         try {
             f = new File("codigo_intermedio.txt");
             w = new FileWriter(f);
             bw = new BufferedWriter(w);
             wr = new PrintWriter(bw);
 
-            wr.write("Código intermedio\n");
+            wr.write("----- CODIGO INTERMEDIO -----\n");
             primeror = true;
             for (int i = 0; i < codinter; i++) {
                 wr.append("\n");
@@ -374,17 +375,625 @@ public class Compilador extends javax.swing.JFrame {
                     if (codeIntermedio[i][j].equals("FALSE ")) {
                         if (!esor || (esor && !primeror)) {
                             codeIntermedio[i][j + 1] = finfor + "";
-                            System.out.println("Entre a editar false");
                         } else if (esor && primeror) {
                             primeror = false;
                         }
                     } else if (codeIntermedio[i][j].equals("TRUE ")) {
                         if (esor) {
-                            System.out.println("inicioopera: " + inicioopera);
                             codeIntermedio[i][j + 1] = inicioopera + "";
                         }
                     }
                     wr.append(codeIntermedio[i][j]);
+                    codeEnsamblador[i][j] = codeIntermedio[i][j];
+                }
+            }
+
+            wr.close();
+            bw.close();
+
+            f = new File("codigo_ensamblador.txt");
+            w = new FileWriter(f);
+            bw = new BufferedWriter(w);
+            wr = new PrintWriter(bw);
+
+            wr.write("----- CODIGO ENSAMBLADOR -----\n\n");
+
+            int lineE = 1;
+            boolean div = false;
+            boolean mod = false;
+            System.out.print("----- CODIGO ENSAMBLADOR -----\n\n");
+            for (int i = 0; i < codinter; i++) {
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals("=")) {
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("MOV ");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("MOV ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (div && (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1") || codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2"))) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("=")) {
+                                System.out.print("AL, ");
+                                wr.append("AL, ");
+                            } else {
+                                System.out.print("AL;");
+                                wr.append("AL;");
+                            }
+                            div = false;
+                        } else if (mod && (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1") || codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2"))) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("=")) {
+                                System.out.print("AH, ");
+                                wr.append("AH, ");
+                            } else {
+                                System.out.print("AH;");
+                                wr.append("AH;");
+                            }
+                            div = false;
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("=")) {
+                                System.out.print("AX, ");
+                                wr.append("AX, ");
+                            } else {
+                                System.out.print("AX;");
+                                wr.append("AX;");
+                            }
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("=")) {
+                                System.out.print("BX, ");
+                                wr.append("BX, ");
+                            } else {
+                                System.out.print("BX;");
+                                wr.append("BX;");
+                            }
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals("=")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("=")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals("+")) {
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("ADD ");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("ADD ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            System.out.print("AX, ");
+                            wr.append("AX, ");
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            System.out.print("BX, ");
+                            wr.append("BX, ");
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals("+")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("+")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    System.out.println("");
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals("-")) {
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("SUB ");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("SUB ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            System.out.print("AX, ");
+                            wr.append("AX, ");
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            System.out.print("BX, ");
+                            wr.append("BX, ");
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals("-")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("-")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    System.out.println("");
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals("*")) {
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("MOV ");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("MOV ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            System.out.print("BL, ");
+                            wr.append("BL, ");
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            System.out.print("BL, ");
+                            wr.append("BL, ");
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals("*")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("*")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("MUL ");
+                    System.out.print("BL;");
+                    System.out.println("");
+
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("MUL ");
+                    wr.append("BL;");
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals("/")) {
+                    div = true;
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("MOV ");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("MOV ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            System.out.print("BL, ");
+                            wr.append("BL, ");
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            System.out.print("BL, ");
+                            wr.append("BL, ");
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals("/")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("/")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("DIV ");
+                    System.out.print("BL;");
+                    System.out.println("");
+
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("DIV ");
+                    wr.append("BL;");
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals("%")) {
+                    mod = true;
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("MOV ");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("MOV ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            System.out.print("BL, ");
+                            wr.append("BL, ");
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            System.out.print("BL, ");
+                            wr.append("BL, ");
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals("%")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("%")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("DIV ");
+                    System.out.print("BL;");
+                    System.out.println("");
+
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("DIV ");
+                    wr.append("BL;");
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals("==")) {
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("CMP ");
+                    wr.append("CMP ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("AX, ");
+                                wr.append("AX, ");
+                            } else {
+                                System.out.print("AX;");
+                                wr.append("AX;");
+                            }
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("BX, ");
+                                wr.append("BX, ");
+                            } else {
+                                System.out.print("BX;");
+                                wr.append("BX;");
+                            }
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals("==")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("==")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("EQ ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("JMP ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("EQ ");
+                    wr.append("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("JMP ");
+                    wr.append("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals("<")) {
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("CMP ");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("CMP ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("AX, ");
+                                wr.append("AX, ");
+                            } else {
+                                System.out.print("AX;");
+                                wr.append("AX;");
+                            }
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("BX, ");
+                                wr.append("BX, ");
+                            } else {
+                                System.out.print("BX;");
+                                wr.append("BX;");
+                            }
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals("<")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("<")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("GE ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("JMP ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("GE ");
+                    wr.append("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("JMP ");
+                    wr.append("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals(">")) {
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("CMP ");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("CMP ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("AX, ");
+                                wr.append("AX, ");
+                            } else {
+                                System.out.print("AX;");
+                                wr.append("AX;");
+                            }
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("BX, ");
+                                wr.append("BX, ");
+                            } else {
+                                System.out.print("BX;");
+                                wr.append("BX;");
+                            }
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals(">")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals(">")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("GT ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("JMP ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("GT ");
+                    wr.append("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("JMP ");
+                    wr.append("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals("<=")) {
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("CMP ");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("CMP ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("AX, ");
+                                wr.append("AX, ");
+                            } else {
+                                System.out.print("AX;");
+                                wr.append("AX;");
+                            }
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("BX, ");
+                                wr.append("BX, ");
+                            } else {
+                                System.out.print("BX;");
+                                wr.append("BX;");
+                            }
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals("<=")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("<=")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("LE ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("JMP ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("LE ");
+                    wr.append("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("JMP ");
+                    wr.append("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals(">=")) {
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("CMP ");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("CMP ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("AX, ");
+                                wr.append("AX, ");
+                            } else {
+                                System.out.print("AX;");
+                                wr.append("AX;");
+                            }
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("BX, ");
+                                wr.append("BX, ");
+                            } else {
+                                System.out.print("BX;");
+                                wr.append("BX;");
+                            }
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals(">=")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals(">=")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("LT ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("JMP ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("LT ");
+                    wr.append("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("JMP ");
+                    wr.append("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals("!=")) {
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("CMP ");
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("CMP ");
+                    for (int j = 1; codeEnsamblador[i][j] != null; j++) {
+                        if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T1")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("AX, ");
+                                wr.append("AX, ");
+                            } else {
+                                System.out.print("AX;");
+                                wr.append("AX;");
+                            }
+                        } else if (codeEnsamblador[i][j].replaceAll("\\s", "").equals("T2")) {
+                            if (codeEnsamblador[i][j + 1] != null) {
+                                System.out.print("BX, ");
+                                wr.append("BX, ");
+                            } else {
+                                System.out.print("BX;");
+                                wr.append("BX;");
+                            }
+                        } else if (!codeEnsamblador[i][j].replaceAll("\\s", "").equals("!=")) {
+                            if (!codeEnsamblador[i][j + 1].replaceAll("\\s", "").equals("!=")) {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ", ");
+                            } else {
+                                System.out.print(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                                wr.append(codeEnsamblador[i][j].replaceAll("\\s", "") + ";");
+                            }
+                        }
+                    }
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("NE ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+                    System.out.print("\t\t");
+                    System.out.print("JMP ");
+                    System.out.print("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("NE ");
+                    wr.append("Renglon" + codeEnsamblador[i + 1][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                    wr.append("\t\t");
+                    wr.append("JMP ");
+                    wr.append("Renglon" + codeEnsamblador[i + 2][3].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                }
+                if (codeEnsamblador[i][3].replaceAll("\\s", "").equals("JMP")) {
+                    System.out.print("Renglon" + codeEnsamblador[i][0] + "\t");
+                    System.out.print("JMP ");
+                    System.out.print("Renglon" + codeEnsamblador[i][2].replaceAll("\\s", "") + ";");
+                    System.out.println("");
+
+                    wr.append("Renglon" + codeEnsamblador[i][0] + "\t");
+                    wr.append("JMP ");
+                    wr.append("Renglon" + codeEnsamblador[i][2].replaceAll("\\s", "") + ";");
+                    wr.append("\n");
+                }
+            }
+
+            wr.close();
+            bw.close();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Ha sucedido un error " + e);
+        }
+    }
+
+    private void printCodeOptimizado(Token[][] lineas, int linea) {
+        try {
+            f = new File("codigo_optimizado.txt");
+            w = new FileWriter(f);
+            bw = new BufferedWriter(w);
+            wr = new PrintWriter(bw);
+
+            wr.write("----- CODIGO OPTIMIZADO -----\n\n");
+            boolean paren = false;
+            int contLine = 0;
+
+            System.out.println("\n----- CODIGO OPTIMIZADO -----\n");
+            for (int i = 0; i < linea && lineas[i][0] != null; i++) {
+                if (!paren) {
+                    contLine++;
+                    System.out.print(contLine + "\t");
+                    wr.append(contLine + "\t");
+                }
+                for (int j = 0; lineas[i][j] != null; j++) {
+                    if (lineas[i][j].getLexeme().equals("(")) {
+                        paren = true;
+                        System.out.print(lineas[i][j].getLexeme() + " ");
+                        wr.append(lineas[i][j].getLexeme() + " ");
+                    } else if (lineas[i][j].getLexeme().equals(")")) {
+                        paren = false;
+                        System.out.print(lineas[i][j].getLexeme() + " ");
+                        wr.append(lineas[i][j].getLexeme() + " ");
+                    } else if (lineas[i][j].getLexeme().equals("{")) {
+                        System.out.println("");
+                        wr.append("\n");
+                        contLine++;
+                        System.out.print(contLine + "\t");
+                        wr.append(contLine + "\t");
+                        System.out.print(lineas[i][j].getLexeme() + "\n");
+                        wr.append(lineas[i][j].getLexeme() + "\n");
+                        contLine++;
+                        System.out.print(contLine + "\t");
+                        wr.append(contLine + "\t");
+                    } else if (lineas[i][j].getLexeme().equals("}")) {
+                        System.out.print(lineas[i][j].getLexeme() + "\n");
+                        wr.append(lineas[i][j].getLexeme() + "\n");
+                        contLine++;
+                        System.out.print(contLine + "\t");
+                        wr.append(contLine + "\t");
+                    } else {
+                        System.out.print(lineas[i][j].getLexeme() + " ");
+                        wr.append(lineas[i][j].getLexeme() + " ");
+                    }
+                }
+                if (!paren) {
+                    System.out.println("");
+                    wr.append("\n");
                 }
             }
 
@@ -612,6 +1221,100 @@ public class Compilador extends javax.swing.JFrame {
         }
 
         // Tercer recorrido
+        boolean pass = false;
+        int contAux = 0;
+        int contAux2 = 0;
+        Token[][] auxArr = new Token[9999][999];
+        Token varCo = null;
+
+        for (int i = 0; i < linea; i++) {
+            varCo = null;
+            for (int j = 0; lineas[i][j] != null; j++) {
+                if (pass) {
+                    auxArr[contAux][contAux2] = lineas[i][j];
+                    contAux2++;
+                }
+                if (lineas[i][j].getLexeme().equals("=")) {
+                    varCo = lineas[i][j - 1];
+                    pass = true;
+                    auxArr[contAux][contAux2] = varCo;
+                    contAux2++;
+                }
+            }
+            pass = false;
+            contAux++;
+            contAux2 = 0;
+        }
+
+        Token[][] lineAux = new Token[9999][999];
+        int c1 = 0;
+        int c2 = 0;
+        int c3 = linea;
+
+        for (int i = 0; i < linea; i++) {
+            if (auxArr[i][0] != null) {
+                for (int j = 0; auxArr[i][j] != null; j++) {
+                    lineAux[c1][c2] = auxArr[i][j];
+                    c2++;
+                }
+                c2 = 0;
+                c1++;
+            } else {
+                c3--;
+            }
+        }
+
+        boolean diff = false;
+        int delete_line = 0;
+        Token deleted = null;
+
+        for (int i = 0; i < c3; i++) {
+            for (int j = 1; lineAux[i][j] != null; j++) {
+                for (int a = i + 1; a < c3; a++) {
+                    for (int b = 1; lineAux[a][b] != null && lineAux[i][b] != null; b++) {
+                        if ((!lineAux[i][b].getLexeme().equals(lineAux[a][b].getLexeme())) || (lineAux[a][0].getLine() == lineAux[i][0].getLine())) {
+                            diff = true;
+                        }
+                    }
+                    if (!diff) {
+                        varCo = lineAux[i][0];
+                        delete_line = lineAux[a][0].getLine();
+                        deleted = lineAux[a][0];
+                    }
+                    diff = false;
+                }
+            }
+        }
+
+        lineAux = new Token[9999][999];
+        c1 = 0;
+        c2 = 0;
+
+        for (int i = 0; i < linea; i++) {
+            if (lineas[i][0] != null && lineas[i][0].getLine() != delete_line) {
+                for (int j = 0; lineas[i][j] != null; j++) {
+                    lineAux[c1][c2] = lineas[i][j];
+                    c2++;
+                }
+                c2 = 0;
+                c1++;
+            }
+        }
+
+        // se reemplaza la variable eliminada por la existente
+        for (int i = 0; i < linea; i++) {
+            for (int j = 1; lineAux[i][j] != null; j++) {
+                if (lineAux[i][j].getLexeme().equals(deleted.getLexeme())) {
+                    lineAux[i][j] = varCo;
+                }
+            }
+        }
+
+        lineas = lineAux;
+        printCodeOptimizado(lineas, linea);
+
+        // Cuarto recorrido
+        System.out.println("\n----- TRIPLOS -----\n");
         for (int i = 0; i < linea; i++) {
             for (int j = 0; lineas[i][j] != null; j++) {
                 if (lineas[i][j].getLexeme().equals("||")) {

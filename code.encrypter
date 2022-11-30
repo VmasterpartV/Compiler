@@ -3,10 +3,13 @@ S-Var RX4h, RX32l , RX77i ;
 Ch-Var RX99p , RX25t , RX89o ;
 
 RX99p = RX73d / RX12a ;
+RX32l = RX89o + RX89o ;
+RX25t = RX73d / RX12a ;
+RX32l = RX25t * RX89o ;
 
-12for12 ( RX73d = 12012 ; RX73d <= 121012 || RX34f >= 122012 ; RX73d = RX73d + 12112 )
+12for12 ( RX73d = 12012 ; RX73d <= 121012 && RX34f >= 122012 ; RX73d = RX73d + 12112 )
 {
-	RX34f = RX12a + RX777u ;
+	RX34f = RX99p + RX777u ;
 }
 
-RX32l = RX77i % RX12a ;
+RX12a = RX25t % RX12a ;
